@@ -11,17 +11,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+from .secretkeys import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# WindowsPath('D:/TUK/24-2/GDSC/steam_backend')
 BASE_DIR = Path(__file__).resolve().parent.parent
+IMAGE_URL = '/images/'
+IMAGE_DIR = BASE_DIR / 'images'
+
+GPT_API_KEY = GPT_API_KEY
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-laehi)xkzih2!l9*tz#%oo7l!52^_v6!gftm2#b_0^py1(vz78'
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,9 +45,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'gpt_api',
+    'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS 미들웨어를 가장 위에 추가
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'gpt_api.middleware.EnsureCsrfTokenMiddleware',
 ]
 
 ROOT_URLCONF = 'steam_backend.urls'
@@ -56,7 +66,7 @@ ROOT_URLCONF = 'steam_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,3 +133,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS 설정 추가
+CORS_ALLOWED_ORIGINS = [
+    # "http://localhost:8000",  # 필요한 도메인을 추가합니다.
+    # "http://127.0.0.1:8000",
+    # # 다른 도메인도 필요에 따라 추가할 수 있습니다.
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# 모든 도메인 허용 (개발 중에만 사용, 배포 시에는 특정 도메인만 허용)
+CORS_ALLOW_ALL_ORIGINS = True

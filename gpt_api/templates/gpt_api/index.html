@@ -1,10 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Keyword and Image</title>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 </head>
 <body>
-    장고 첫페이지!
+    <h1>Keyword and Image</h1>
+    <button id="generateButton">Generate Image</button>
+    <div id="keyword"></div>
+    <div id="imageContainer">
+        <img id="generatedImage" src="" alt="Generated Image">
+    </div>
+
+    <script>
+        document.getElementById('generateButton').addEventListener('click', function() {
+            const csrftoken = getCookie('csrftoken');
+            fetch('/getkeyword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data); // 디버깅을 위해 콘솔에 데이터 출력
+                document.getElementById('keyword').innerText = `Keyword: ${data.keyword}`;
+                if (data.image_path) {
+                    document.getElementById('generatedImage').src = `/${data.image_path}`;
+                } else if (data.error) {
+                    document.getElementById('imageContainer').innerText = `Error: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        });
+    </script>
 </body>
 </html>
