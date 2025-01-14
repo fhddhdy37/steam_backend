@@ -19,15 +19,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 IMAGE_URL = '/images/'
 IMAGE_DIR = BASE_DIR / 'images'
 
-GPT_API_KEY = GPT_API_KEY
-
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# Sectret keys
 SECRET_KEY = DJANGO_SECRET_KEY
+GPT_API_KEY = GPT_API_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
