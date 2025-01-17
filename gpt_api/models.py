@@ -8,7 +8,11 @@ class User(models.Model):
     password = models.CharField(max_length=20)
 
 class Diary(models.Model):
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=30)
     content = models.TextField()
-    date = models.DateField()
+    keywords = models.CharField(max_length=100)
     sticker_path = models.CharField(max_length=100, null=True)
+    date = models.DateField()
+    is_favorite = models.BooleanField(default=False)
