@@ -16,10 +16,10 @@ from .serializers import DataSerializer
 
 
 # Create your views here.
-
+# REST API 처리하는 뷰
 class DataList(APIView):
     def get(self, request):
-        data = Data.objects.all()
+        data = Diary.objects.all()
         serializer = DataSerializer(data, many=True)
         return Response(serializer.data)
 

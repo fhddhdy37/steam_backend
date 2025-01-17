@@ -1,11 +1,14 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import DataList
 
 from . import views
 
 urlpatterns = [
-    path('data/', DataList.as_view(), name = 'data-list'),
+    ## API 엔드포인트 설정정
+    path('data/', views.DataList.as_view(), name = 'data-list'),
+    
     path('', views.index, name='index'),
     path('hi/', views.hi, name='hi'),
     path('bye/', views.bye, name='bye'),
