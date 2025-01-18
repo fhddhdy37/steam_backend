@@ -11,9 +11,49 @@ from .serializers import DiarySerializer
 
 # Create your views here.
 
-#클래스명 변경 필요: 의미에 맞지 않는듯
-class DataList(APIView):
+class GetDiary(APIView):
     def get(self, request):
+        '''
+            endpoint: /getdiary/
+            일기 데이터를 가져오는 API
+            
+            request body: none
+            response body:
+            {
+                "diary": [
+                    {
+                        "id": number,
+                        "title": "제목",
+                        "content": "본문",
+                        "keywords": "일기 핵심 키워드",
+                        "sticker_path": "이미지 경로",
+                        "date": "YYYY-MM-DD"
+                        "is_favorite": boolean
+                    },
+                    ...
+                ]
+            }
+
+
+            request body:
+            {
+                "date": "YYYY-MM-DD"
+            }
+
+            response body:
+            {
+                "diary": {
+                    "id": number,
+                    "title": "제목",
+                    "content": "본문",
+                    "keywords": "일기 핵심 키워드",
+                    "sticker_path": "이미지 경로",
+                    "date": "YYYY-MM-DD"
+                    "is_favorite": boolean
+                }
+            }
+        '''
+
         data = request.data
         date = data.get('date')
         if date:
@@ -21,27 +61,63 @@ class DataList(APIView):
             if not diary_entries:
                 return JsonResponse({'error': 'Data not found'}, status=404)
             serializer = DiarySerializer(diary_entries)
-            return JsonResponse({'data': serializer.data}, safe=False)
         else:
-            return JsonResponse({'error': 'Invalid request'}, status=400)
+            diary_entries = Diary.objects.all()
+            serializer = DiarySerializer(diary_entries, many=True)
 
+        return JsonResponse({'diary': serializer.data}, json_dumps_params={'ensure_ascii': False})
+
+class PostDiary(APIView):
     def post(self, request):
+        '''
+            endpoint: /postdiary/
+            일기 데이터를 등록하는 API
+
+            로그인 기능 구현 이후 request.user로 username을 가져오도록 수정
+
+            request body:
+            {
+                "title": "제목", (required)
+                "content": "본문", (required)
+                "date": "YYYY-MM-DD" (required)
+            }
+
+            response body:
+            {
+                "message": "Data added successfully",
+                "diary": {
+                    "id": number,
+                    "title": "제목",
+                    "content": "본문",
+                    "keywords": "일기 핵심 키워드",
+                    "sticker_path": "이미지 경로",
+                    "date": "YYYY-MM-DD"
+                }
+            }
+        '''
+
         data = request.data
         try:
+            # 로그인 구현 이후 username을 세션에서 가져오도록 수정
+            username = "testuser"
             title = data.get('title')
             content = data.get('content')
             keyword = generate_keyword_from_diary(content)
-            sticker_path = generate_image(keyword)
+            sticker_path = generate_image(keyword, username)
             date = data.get('date')
 
-            diary = Diary.objects.create(title=title, content=content, date=date, sticker_path=sticker_path)
+            diary = Diary.objects.create(title=title, content=content, keywords=keyword, sticker_path=sticker_path, date=date)
             return JsonResponse({'message': 'Data added successfully', 'diary': {
+                'id': diary.id,
+                # 'user_id': diary.user_id,
                 'title': diary.title,
                 'content': diary.content,
-                'date': diary.date,
-                'sticker_path': diary.sticker_path
+                'keyword': diary.keywords,
+                'sticker_path': diary.sticker_path,
+                'date': diary.date
             }})
         except Exception as e:
+            print(e)
             return JsonResponse({'error': str(e)}, status=400)
     
 #클라이언트에 이미지 띄워주는 테스트 함수

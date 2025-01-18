@@ -2,9 +2,22 @@ import openai
 import base64
 import random
 import os
+
 from django.conf import settings
 
-def generate_image(keyword):
+def generate_image(keyword, username):
+    '''
+        dalle-3 모델을 사용하여 이미지를 생성하는 함수
+        프롬프트를 구조화하여 일관적인 이미지를 생성
+
+        response_format: application/json, b64_json
+            application/json: 이미지 URL을 반환
+            b64_json: 이미지 데이터를 Base64로 인코딩하여 반환
+            이미지를 서버 로컬에 직접 저장하기 위해 b4_json 사용
+        keyword: 이미지 생성에 사용할 키워드
+        username: 이미지를 생성한 유저의 이름 (폴더 구조를 위해 사용)
+        return: 이미지 파일 경로
+    '''
     client = openai.Client(api_key=settings.GPT_API_KEY)
     
     try:
@@ -16,7 +29,8 @@ def generate_image(keyword):
                     response_format="b64_json"
                     )
 
-        print(response.data[0].url)
+        # 이미지 URL 로깅
+        # print(response.data[0].url)
 
         # Base64 인코딩된 이미지 데이터를 가져옵니다.
         b64_json = response.data[0].b64_json
@@ -24,14 +38,16 @@ def generate_image(keyword):
         # Base64 문자열을 디코딩합니다.
         image_data = base64.b64decode(b64_json)
 
+        if not os.path.exists(settings.IMAGE_DIR / str(username)):
+            os.makedirs(settings.IMAGE_DIR / str(username))
+
         # 파일로 저장합니다.
-        # current_directory = os.path.dirname(os.path.abspath(__file__))
-        # image_path = os.path.join(current_directory, f"resources/images/image{random.randrange(10000, 99999)}.png")
-        image_path = settings.IMAGE_DIR / f"image{random.randrange(10000, 99999)}.png"
+        image_path = settings.IMAGE_DIR / str(username) / f"image{random.randrange(10000, 99999)}.png"
 
         with open(image_path, "wb") as file:
             file.write(image_data)
 
+        print("image generated at: ", image_path)
         return str(image_path)
     except openai.BadRequestError as e:
         print(e)
@@ -39,6 +55,12 @@ def generate_image(keyword):
 
 
 def generate_keyword_from_diary(diary_content):
+    '''
+        gpt-4 모델을 사용하여 일기에서 중요한 키워드를 추출하는 함수
+        
+        diary_content: 일기 내용
+        return: 추출된 키워드
+    '''
     client = openai.Client(api_key=settings.GPT_API_KEY)
 
     try:
@@ -50,7 +72,8 @@ def generate_keyword_from_diary(diary_content):
             ]
         )
 
-        print(response.choices[0].message.content)
+        # 키워드 로깅
+        print("keyword generated as: ", response.choices[0].message.content)
         return response.choices[0].message.content
     except openai.BadRequestError as e:
         print(e)
