@@ -17,7 +17,7 @@ class GetDiary(APIView):
             endpoint: /getdiary/
             일기 데이터를 가져오는 API
             
-            request body: none
+            query params: none
             response body:
             {
                 "diary": [
@@ -35,7 +35,7 @@ class GetDiary(APIView):
             }
 
 
-            request body:
+            query params:
             {
                 "date": "YYYY-MM-DD"
             }
@@ -54,8 +54,7 @@ class GetDiary(APIView):
             }
         '''
 
-        data = request.data
-        date = data.get('date')
+        date = request.query_params.get('date')
         if date:
             diary_entries = Diary.objects.filter(date=date).first()
             if not diary_entries:
@@ -119,6 +118,32 @@ class PostDiary(APIView):
         except Exception as e:
             print(e)
             return JsonResponse({'error': str(e)}, status=400)
+
+class GetImage(APIView):
+    def get(self, request):
+        '''
+            endpoint: /getimage/
+            이미지 데이터를 가져오는 API
+
+            query params:
+            {
+                "user_id": "유저 아이디",
+                "sticker_path": "이미지 경로"
+            }
+
+            response body:
+            {
+                "image": "이미지 데이터"
+            }
+        '''
+
+        # user_id = request.data.get('user_id')
+        user_id = 'testuser'
+        sticker_path = request.query_params.get('sticker_path')
+        sticker_path = sticker_path.split('/')[-1]
+        with open(settings.IMAGE_DIR / f"{user_id}/{sticker_path}", 'rb') as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return JsonResponse({'image': encoded_string})
     
 #클라이언트에 이미지 띄워주는 테스트 함수
 def imgtest(request):
